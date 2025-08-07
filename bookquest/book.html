@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Selected Book</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: #111;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        #searchBox {
+            padding: 10px;
+            width: 250px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+        }
+
+        #suggestionBox {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 250px;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .suggestion-item:hover {
+            background-color: #eee;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin: 40px;
+        }
+
+        .book-button {
+            background-color: #fff;
+            border: 3px solid #111;
+            padding: 60px 80px;
+            font-size: 32px;
+            color: #111;
+            border-radius: 32px;
+            cursor: pointer;
+            min-width: 420px;
+            min-height: 120px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 32px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📚 Online Books</h1>
+        <div style="position: relative;">
+            <input type="text" placeholder="Search for books..." id="searchBox" />
+            <div id="suggestionBox"></div>
+        </div>
+    </div>
+    <div class="main-content">
+        <button id="bookButton" class="book-button"></button>
+    </div>
+
+    <script>
+        // Set initial button text from localStorage
+        function setBookButtonText(text) {
+            const button = document.getElementById("bookButton");
+            button.textContent = text || "No book selected";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            setBookButtonText(localStorage.getItem("selectedBook"));
+
+            const searchBox = document.getElementById('searchBox');
+            const suggestionBox = document.getElementById('suggestionBox');
+
+            searchBox.addEventListener('input', () => {
+                const query = searchBox.value.trim();
+                suggestionBox.innerHTML = '';
+
+                if (!query) {
+                    suggestionBox.style.display = 'none';
+                    return;
+                }
+
+                fetch(`http://localhost:5000/suggest?q=${encodeURIComponent(query)}`)
+                    .then(res => res.json())
+                    .then(matches => {
+                        suggestionBox.innerHTML = '';
+                        matches.slice(0, 10).forEach(match => {
+                            const item = document.createElement('div');
+                            item.textContent = match;
+                            item.classList.add('suggestion-item');
+                            item.addEventListener('click', () => {
+                                localStorage.setItem("selectedBook", match);
+                                setBookButtonText(match);
+                                suggestionBox.style.display = 'none';
+                                searchBox.value = '';
+                            });
+                            suggestionBox.appendChild(item);
+                        });
+                        suggestionBox.style.display = matches.length ? 'block' : 'none';
+                    })
+                    .catch(err => console.error('Error fetching suggestions:', err));
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!suggestionBox.contains(e.target) && e.target !== searchBox) {
+                    suggestionBox.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

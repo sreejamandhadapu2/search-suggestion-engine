@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Online Books</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        #searchBox {
+            padding: 10px;
+            width: 250px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+        }
+
+        #suggestionBox {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            width: 250px;
+            background: white;
+            border: 1px solid #ccc;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .suggestion-item:hover {
+            background-color: #eee;
+        }
+
+        .section {
+            margin: 30px 40px;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+        }
+
+        .scroll-row {
+            display: flex;
+            overflow-x: auto;
+            gap: 14px;
+            padding: 12px 0;
+            scroll-behavior: smooth;
+        }
+
+        .scroll-row::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .scroll-row::-webkit-scrollbar-thumb {
+            background: #bbb;
+            border-radius: 3px;
+        }
+
+        .scroll-row::-webkit-scrollbar-track {
+            background: #eee;
+        }
+
+        .btn-item {
+            flex: 0 0 auto;
+            padding: 20px 30px;
+            font-size: 18px;
+            background-color: #ffffff;
+            border: 2px solid #2c3e50;
+            border-radius: 24px;
+            color: #2c3e50;
+            cursor: pointer;
+            height: 100px;
+            min-width: 180px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+
+        .btn-item:hover {
+            background-color: #2c3e50;
+            color: white;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>📚 Online Books</h1>
+        <div style="position: relative;">
+            <input type="text" placeholder="Search for books..." id="searchBox" />
+            <div id="suggestionBox"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📈 Most Viewed Books</h2>
+        <div class="scroll-row" id="booksRow">
+            <!-- Filled dynamically -->
+            <button class="btn-item">The Great Gatsby</button>
+            <button class="btn-item">1984</button>
+            <button class="btn-item">To Kill a Mockingbird</button>
+            <button class="btn-item">Pride and Prejudice</button>
+            <button class="btn-item">The Catcher in the Rye</button>
+            <button class="btn-item">The Hobbit</button>
+            <button class="btn-item">The Da Vinci Code</button>
+            <button class="btn-item">Harry Potter</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>✍️ Authors</h2>
+        <div class="scroll-row" id="authorsRow">
+            <!-- Filled dynamically -->
+            <button class="btn-item">F. Scott Fitzgerald</button>
+            <button class="btn-item">George Orwell</button>
+            <button class="btn-item">Harper Lee</button>
+            <button class="btn-item">Jane Austen</button>
+            <button class="btn-item">J.D. Salinger</button>
+            <button class="btn-item">J.R.R. Tolkien</button>
+            <button class="btn-item">Dan Brown</button>
+            <button class="btn-item">J.K. Rowling</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📚 Genres</h2>
+        <div class="scroll-row" id="genresRow">
+            <button class="btn-item">Fiction</button>
+            <button class="btn-item">Romance</button>
+            <button class="btn-item">Science Fiction</button>
+            <button class="btn-item">Mystery</button>
+            <button class="btn-item">Thriller</button>
+            <button class="btn-item">Fantasy</button>
+            <button class="btn-item">Biography</button>
+            <button class="btn-item">Self Help</button>
+            <!-- Filled dynamically -->
+        </div>
+    </div>
+
+
+    <script>
+        let booksData = [];
+
+        fetch('sample.json')
+            .then(response => response.json())
+            .then(data => {
+                booksData = data;
+                const sortedBooks = [...data].sort((a, b) => b.views - a.views);
+                const topBooks = [...new Set(sortedBooks.map(book => book.title))].slice(0, 10);
+                const topAuthors = [...new Set(sortedBooks.map(book => book.author))].slice(0, 10);
+                const topGenres = [...new Set(sortedBooks.map(book => book.genre))].slice(0, 10);
+
+                const createButton = (text) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn-item';
+                    btn.textContent = text;
+                    return btn;
+                };
+
+                const booksRow = document.getElementById('booksRow');
+                const authorsRow = document.getElementById('authorsRow');
+                const genresRow = document.getElementById('genresRow');
+
+                topBooks.forEach(title => booksRow.appendChild(createButton(title)));
+                topAuthors.forEach(author => authorsRow.appendChild(createButton(author)));
+                topGenres.forEach(genre => genresRow.appendChild(createButton(genre)));
+            })
+            .catch(err => {
+                console.error("Failed to load JSON:", err);
+            });
+
+        const searchBox = document.getElementById('searchBox');
+        const suggestionBox = document.getElementById('suggestionBox');
+
+        searchBox.addEventListener('input', () => {
+            const query = searchBox.value.trim();
+            suggestionBox.innerHTML = '';
+
+            if (!query) {
+                suggestionBox.style.display = 'none';
+                return;
+            }
+
+            fetch(`http://localhost:5000/suggest?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(matches => {
+                    suggestionBox.innerHTML = '';
+                    matches.slice(0, 10).forEach(match => {
+                        const item = document.createElement('div');
+                        item.textContent = match;
+                        item.classList.add('suggestion-item');
+                        item.addEventListener('click', () => {
+                            localStorage.setItem("selectedBook", match); // Save selected suggestion
+                            window.location.href = "book.html";         // Redirect to book.html
+                        });
+                        suggestionBox.appendChild(item);
+                    });
+                    suggestionBox.style.display = matches.length ? 'block' : 'none';
+                })
+                .catch(err => console.error('Error fetching suggestions:', err));
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!suggestionBox.contains(e.target) && e.target !== searchBox) {
+                suggestionBox.style.display = 'none';
+            }
+
+
+        });
+    </script>
+</body>
+
+</html>
